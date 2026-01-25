@@ -2,8 +2,6 @@
 
 Blog Post: https://www.blubyte.eu/blog
 
-NetScaler CLI snippet
-
 List the IP addresses used by Tenable to scan your surface in a patset, the list is provided by the Tenable.
 
 ```
