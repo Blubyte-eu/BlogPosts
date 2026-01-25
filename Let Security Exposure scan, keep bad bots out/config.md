@@ -1,9 +1,10 @@
-Let Security Exposure scan, keep bad bots out
+# Let Security Exposure scan, keep bad bots out
 
 Blog Post: https://www.blubyte.eu/blog
 
 NetScaler CLI snippet
 
+...
 # List the IP addresses used by Tenable to scan your surface in a patset, the list is provided by the Tenable.
 add policy patset PATSET_IP_TENABLE
 bind policy patset PATSET_IP_TENABLE "54.93.254.128/26" -index 1
@@ -45,18 +46,24 @@ bind policy patset PATSET_IP_TENABLE "162.159.129.83/32" -index 36
 bind policy patset PATSET_IP_TENABLE "162.159.130.83/32" -index 37
 bind policy patset PATSET_IP_TENABLE "162.159.140.26/32" -index 38
 bind policy patset PATSET_IP_TENABLE "172.66.0.26/32" -index 39
+
 # create expression to match client IP against the patset
 add policy expression EXP_PL_IP_TENABLE "(CLIENT.IP.SRC + \"/32\").EQUALS_ANY(\"PATSET_IP_TENABLE\") || (CLIENT.IP.SRC.SUBNET(31) + \"/31\").EQUALS_ANY(\"PATSET_IP_TENABLE\") || (CLIENT.IP.SRC.SUBNET(30) + \"/30\").EQUALS_ANY(\"PATSET_IP_TENABLE\") || (CLIENT.IP.SRC.SUBNET(29) + \"/29\").EQUALS_ANY(\"PATSET_IP_TENABLE\") || (CLIENT.IP.SRC.SUBNET(28) + \"/28\").EQUALS_ANY(\"PATSET_IP_TENABLE\") || (CLIENT.IP.SRC.SUBNET(27) + \"/27\").EQUALS_ANY(\"PATSET_IP_TENABLE\") || (CLIENT.IP.SRC.SUBNET(26) + \"/26\").EQUALS_ANY(\"PATSET_IP_TENABLE\") || (CLIENT.IP.SRC.SUBNET(25) + \"/25\").EQUALS_ANY(\"PATSET_IP_TENABLE\") || (CLIENT.IP.SRC.SUBNET(24) + \"/24\").EQUALS_ANY(\"PATSET_IP_TENABLE\")"
+
 # create log action to produce audit log when request is blocked
 add audit messageaction AUDIT_IP_TENABLE INFORMATIONAL q/"mgdlogtype=[STIB_IP_TENABLE] src.ip=[" + CLIENT.IP.SRC + "] scr.prt=[" + CLIENT.TCP.SRCPORT + "] dst.ip=[" + CLIENT.IP.DST + "] dst.prt=[" + CLIENT.TCP.DSTPORT + "] cs_vserver=[" + HTTP.REQ.CS_VSERVER.NAME + "] hostname=[" + HTTP.REQ.HOSTNAME + "] url=[" + HTTP.REQ.URL.PATH_AND_QUERY.SUBSTR(0,200) + "] method=[" + HTTP.REQ.METHOD + "] userid=none User-Agent=[\"" + HTTP.REQ.HEADER("User-Agent") + "\"" + "] referer=[\"" + HTTP.REQ.HEADER("referer").VALUE(0) + "\"" + "] location=[" + CLIENT.IP.SRC.LOCATION + "] Action=[blocked]"/ -logtoNewnslog YES
+
 # responder policy to block requests from Tenable IPs unless User-Agent contains "Tenable-Scan-CustomerID"
 add responder policy RS_PL_IP_TENABLE "EXP_PL_IP_TENABLE && HTTP.REQ.HEADER(\"User-Agent\").CONTAINS(\"Tenable-Scan-CustomerID\").NOT" RS_AC_Blocked -logAction AUDIT_IP_TENABLE
+
 # bind the responder policy to relevant load balancing or content switch vservers
 bind lb vserver LB_VS_server -policyName RS_PL_IP_TENABLE -priority 100 -gotoPriorityExpression END -type REQUEST
 bind cs vserver CS_VS_server -policyName RS_PL_IP_TENABLE -priority 100 -gotoPriorityExpression END -type REQUEST
+
 # Note: Replace LB_VS_server and CS_VS_server with actual vserver names where the policy needs to be bound.
 
 
-#Add to whitelist BOT MgMt Profile
+# Add to whitelist BOT MgMt Profile
 add policy expression EXP_PL_IP_TENABLE "(CLIENT.IP.SRC + \"/32\").EQUALS_ANY(\"PATSET_IP_TENABLE\") || (CLIENT.IP.SRC.SUBNET(31) + \"/31\").EQUALS_ANY(\"PATSET_IP_TENABLE\") || (CLIENT.IP.SRC.SUBNET(30) + \"/30\").EQUALS_ANY(\"PATSET_IP_TENABLE\") || (CLIENT.IP.SRC.SUBNET(29) + \"/29\").EQUALS_ANY(\"PATSET_IP_TENABLE\") || (CLIENT.IP.SRC.SUBNET(28) + \"/28\").EQUALS_ANY(\"PATSET_IP_TENABLE\") || (CLIENT.IP.SRC.SUBNET(27) + \"/27\").EQUALS_ANY(\"PATSET_IP_TENABLE\") || (CLIENT.IP.SRC.SUBNET(26) + \"/26\").EQUALS_ANY(\"PATSET_IP_TENABLE\") || (CLIENT.IP.SRC.SUBNET(25) + \"/25\").EQUALS_ANY(\"PATSET_IP_TENABLE\") || (CLIENT.IP.SRC.SUBNET(24) + \"/24\").EQUALS_ANY(\"PATSET_IP_TENABLE\")"
 bind bot profile Test -whiteList -type EXPRESSION -value "EXP_PL_IP_TENABLE && HTTP.REQ.HEADER(\"User-Agent\").CONTAINS(\"Tenable-Scan-CustomerID\")" -log ON -enabled ON -logMessage "Tenable Scan"
+...
