@@ -1,6 +1,8 @@
 
 # NetScaler CLI snippet
 
+Blog Post: https://www.blubyte.eu/blog/configuring-a-url-migration-to-a-new-domain
+
 String Maps and Pattern sets can be made more specific or duplicated for handling multiple FQDN's. 
 
 
