@@ -1,6 +1,6 @@
 # Let Security Exposure scan, keep bad bots out
 
-Blog Post: https://www.blubyte.eu/blog
+Blog Post: https://www.blubyte.eu/blog/keep-bad-bots-out-with-netscaler-bot-management
 
 List the IP addresses used by Tenable to scan your surface in a patset, the list is provided by the Tenable.
 
